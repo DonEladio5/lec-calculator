@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LEC 2026 Spring - Calculadora</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-panel: #131a28;
+      --bg-panel-hover: #1b2536;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --accent: #38bdf8;
+
+      --win: #10b981;
+      --loss: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 800;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 5fr 4fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Standings Panel */
+    .panel {
+      background-color: var(--bg-panel);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .panel-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      text-align: center;
+      padding: 1rem 0.5rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    th.team-col {
+      text-align: left;
+    }
+
+    td {
+      padding: 1rem 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    td.team-col {
+      text-align: left;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.1rem;
+    }
+
+    .rank-num {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--border-color);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .row-top4 .rank-num {
+      background: #38bdf8;
+      color: #000;
+    }
+
+    .row-top6 .rank-num {
+      background: #10b981;
+      color: #000;
+    }
+
+    .row-top4 td {
+      background-color: rgba(56, 189, 248, 0.05);
+    }
+
+    .row-top6 td {
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+
+    .row-top4:hover td {
+      background-color: rgba(56, 189, 248, 0.1);
+    }
+
+    .row-top6:hover td {
+      background-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .team-tag {
+      font-weight: 800;
+      color: var(--accent);
+      width: 45px;
+    }
+
+    .pos-diff {
+      color: var(--win);
+    }
+
+    .neg-diff {
+      color: var(--loss);
+    }
+
+    /* Matches panel */
+    .matches-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 570px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .matches-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .matches-list::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .matches-list::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    .match-card {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s;
+    }
+
+    .match-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .match-header {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .match-teams {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--border-color);
+    }
+
+    .btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .btn-reset {
+      background: rgba(244, 63, 94, 0.1);
+      color: var(--loss);
+      border-color: rgba(244, 63, 94, 0.3);
+    }
+
+    .btn-reset:hover {
+      background: var(--loss);
+      color: #fff;
+    }
+
+    .reset-all {
+      background: var(--bg-panel);
+      border: 1px solid var(--loss);
+      color: var(--loss);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .reset-all:hover {
+      background: var(--loss);
+      color: #fff;
+    }
+
+    /* Animations */
+    @keyframes highlightRow {
+      0% {
+        background-color: rgba(56, 189, 248, 0.3);
+      }
+
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    .row-updated {
+      animation: highlightRow 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Calculadora LEC 2026 Spring</h1>
+
+  <div class="container">
+    <div class="panel">
+      <div class="panel-title">Clasificación</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="team-col">Equipo</th>
+            <th title="Series Win-Loss">S. W-L</th>
+            <th title="Diferencia de Series">S. Diff</th>
+            <th title="Mapas Win-Loss">Games</th>
+            <th title="Diferencia de Mapas">G. Diff</th>
+            <th title="Probabilidad de Playoffs">Playoffs %</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body">
+          <!-- Standings dynamically generated -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        Próximos Partidos
+        <button class="reset-all" onclick="resetAll()">Reiniciar Todo</button>
+      </div>
+      <div class="matches-list" id="matches-list">
+        <!-- Matches dynamically generated -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const INIT_TEAMS = {
+      VIT: { name: "Team Vitality", tag: "VIT", sW: 6, sL: 1, gW: 13, gL: 5 },
+      GX: { name: "GIANTX", tag: "GX", sW: 4, sL: 2, gW: 9, gL: 6 },
+      NAVI: { name: "Natus Vincere", tag: "NAVI", sW: 4, sL: 1, gW: 8, gL: 5 },
+      KC: { name: "Karmine Corp", tag: "KC", sW: 2, sL: 0, gW: 4, gL: 1 },
+      G2: { name: "G2 Esports", tag: "G2", sW: 2, sL: 2, gW: 6, gL: 4 },
+      MKOI: { name: "Movistar KOI", tag: "MKOI", sW: 3, sL: 2, gW: 8, gL: 4 },
+      FNC: { name: "Fnatic", tag: "FNC", sW: 1, sL: 3, gW: 3, gL: 7 },
+      SK: { name: "SK Gaming", tag: "SK", sW: 2, sL: 5, gW: 6, gL: 10 },
+      SHFT: { name: "Shifters", tag: "SHFT", sW: 0, sL: 3, gW: 1, gL: 6 },
+      TH: { name: "Team Heretics", tag: "TH", sW: 1, sL: 6, gW: 3, gL: 13 }
+    };
+
+    // Fila x gana a la columna y
+    const INIT_H2H = {
+      VIT: { G2: 1, MKOI: 1, NAVI: 1, SHFT: 1, TH: 1, GX: 1 },
+      GX: { FNC: 1, SHFT: 1, SK: 1, TH: 1 },
+      NAVI: { GX: 1, MKOI: 1, SK: 1, TH: 1 },
+      KC: { SK: 1, VIT: 1 },
+      G2: { SHFT: 1, SK: 1 },
+      MKOI: { FNC: 1, SK: 1, TH: 1 },
+      FNC: { G2: 1 },
+      SK: { FNC: 1, SHFT: 1 },
+      SHFT: {},
+      TH: { SK: 1 }
+    };
+
+    const SCHEDULE = [
+      { id: 3, t1: "SHFT", t2: "G2", date: "W5 Mon 2026-04-20 17:00" },
+      { id: 4, t1: "SK", t2: "KC", date: "W5 Mon 2026-04-20 19:15" },
+      { id: 5, t1: "SHFT", t2: "FNC", date: "W5 Fri 2026-04-24 16:45" },
+      { id: 6, t1: "NAVI", t2: "KC", date: "W5 Fri 2026-04-24 18:30" },
+      { id: 7, t1: "FNC", t2: "NAVI", date: "W5 Sat 2026-04-25 16:45" },
+      { id: 8, t1: "KC", t2: "SHFT", date: "W5 Sat 2026-04-25 18:30" },
+      { id: 9, t1: "SHFT", t2: "NAVI", date: "W5 Sun 2026-04-26 16:45" },
+      { id: 10, t1: "KC", t2: "FNC", date: "W5 Sun 2026-04-26 18:30" },
+      { id: 11, t1: "FNC", t2: "TH", date: "W6 Sat 2026-05-02 17:00" },
+      { id: 12, t1: "VIT", t2: "SK", date: "W6 Sat 2026-05-02 19:15" },
+      { id: 13, t1: "TH", t2: "SHFT", date: "W6 Sun 2026-05-03 17:00" },
+      { id: 14, t1: "G2", t2: "NAVI", date: "W6 Sun 2026-05-03 19:15" },
+      { id: 15, t1: "FNC", t2: "VIT", date: "W6 Mon 2026-05-04 17:00" },
+      { id: 16, t1: "SHFT", t2: "MKOI", date: "W6 Mon 2026-05-04 19:15" },
+      { id: 17, t1: "KC", t2: "G2", date: "W7 Fri 2026-05-08 16:00" },
+      { id: 18, t1: "GX", t2: "MKOI", date: "W7 Fri 2026-05-08 19:00" },
+      { id: 19, t1: "G2", t2: "GX", date: "W7 Sat 2026-05-09 16:00" },
+      { id: 20, t1: "MKOI", t2: "KC", date: "W7 Sat 2026-05-09 19:00" },
+      { id: 21, t1: "KC", t2: "GX", date: "W7 Sun 2026-05-10 15:00" },
+      { id: 22, t1: "MKOI", t2: "G2", date: "W7 Sun 2026-05-10 18:00" }
+    ];
+
+    let matchResults = {};
+
+    function deepCopy(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    function calculateCurrentState() {
+      const db = {
+        teams: deepCopy(INIT_TEAMS),
+        h2h: deepCopy(INIT_H2H)
+      };
+
+      for (const [id, res] of Object.entries(matchResults)) {
+        if (!res) continue;
+        const match = SCHEDULE.find(m => m.id == id);
+
+        let t1SeriesWin = res.s1 > res.s2 ? 1 : 0;
+        let t2SeriesWin = res.s2 > res.s1 ? 1 : 0;
+
+        // Update Teams state
+        db.teams[match.t1].sW += t1SeriesWin;
+        db.teams[match.t1].sL += t2SeriesWin;
+        db.teams[match.t1].gW += res.s1;
+        db.teams[match.t1].gL += res.s2;
+
+        db.teams[match.t2].sW += t2SeriesWin;
+        db.teams[match.t2].sL += t1SeriesWin;
+        db.teams[match.t2].gW += res.s2;
+        db.teams[match.t2].gL += res.s1;
+
+        // Update H2H state
+        if (t1SeriesWin) {
+          if (!db.h2h[match.t1]) db.h2h[match.t1] = {};
+          db.h2h[match.t1][match.t2] = (db.h2h[match.t1][match.t2] || 0) + 1;
+        } else if (t2SeriesWin) {
+          if (!db.h2h[match.t2]) db.h2h[match.t2] = {};
+          db.h2h[match.t2][match.t1] = (db.h2h[match.t2][match.t1] || 0) + 1;
+        }
+      }
+
+      return db;
+    }
+
+    function getH2HNet(tA, tB, db) {
+      const winsA = db.h2h[tA] && db.h2h[tA][tB] ? db.h2h[tA][tB] : 0;
+      const winsB = db.h2h[tB] && db.h2h[tB][tA] ? db.h2h[tB][tA] : 0;
+      return winsA - winsB; // Positive means A is better
+    }
+
+    function getStandings() {
+      const db = calculateCurrentState();
+      let list = Object.keys(db.teams).map(key => ({ id: key, ...db.teams[key] }));
+
+      // PRIMARY SORT
+      list.sort((a, b) => {
+        // 1. Series Diff
+        const diffA = a.sW - a.sL;
+        const diffB = b.sW - b.sL;
+        if (diffA !== diffB) return diffB - diffA;
+
+        // 2. Map Diff
+        const mapDiffA = a.gW - a.gL;
+        const mapDiffB = b.gW - b.gL;
+        if (mapDiffA !== mapDiffB) return mapDiffB - mapDiffA;
+
+        return 0;
+      });
+
+      // TIEBREAKERS H2H (only for 2-way ties on base parameters)
+      const groups = {};
+      list.forEach(t => {
+        const hash = `${t.sW - t.sL}_${t.gW - t.gL}`;
+        if (!groups[hash]) groups[hash] = [];
+        groups[hash].push(t);
+      });
+
+      const finalList = [];
+      Object.keys(groups).sort((a, b) => {
+        const [sdA, mdA] = a.split('_').map(Number);
+        const [sdB, mdB] = b.split('_').map(Number);
+        if (sdA !== sdB) return sdB - sdA;
+        return mdB - mdA;
+      }).forEach(hash => {
+        const group = groups[hash];
+        if (group.length === 2) {
+          const net = getH2HNet(group[0].id, group[1].id, db);
+          if (net < 0) {
+            group.reverse();
+          }
+        }
+        finalList.push(...group);
+      });
+
+      // RANK ASSIGNMENT
+      let currentRank = 1;
+      for (let i = 0; i < finalList.length; i++) {
+        if (i > 0) {
+          const prev = finalList[i - 1];
+          const curr = finalList[i];
+          const hashPrev = `${prev.sW - prev.sL}_${prev.gW - prev.gL}`;
+          const hashCurr = `${curr.sW - curr.sL}_${curr.gW - curr.gL}`;
+
+          let isTied = false;
+          if (hashPrev === hashCurr) {
+            const groupSize = list.filter(t => `${t.sW - t.sL}_${t.gW - t.gL}` === hashCurr).length;
+            if (groupSize === 2) {
+              if (getH2HNet(prev.id, curr.id, db) === 0) isTied = true;
+            } else {
+              isTied = true; // 3+ tie
+            }
+          }
+          if (!isTied) {
+            currentRank = i + 1;
+          }
+        }
+        finalList[i].rank = currentRank;
+      }
+      return finalList;
+    }
+
+    function simulateProbabilities() {
+      const N = 2000;
+      const db = calculateCurrentState();
+      const unplayed = SCHEDULE.filter(m => !matchResults[m.id]);
+
+      let top6Counts = {};
+      Object.keys(db.teams).forEach(t => top6Counts[t] = 0);
+
+      const possibleScores = [
+        { s1: 2, s2: 0 }, { s1: 2, s2: 1 }, { s1: 1, s2: 2 }, { s1: 0, s2: 2 }
+      ];
+
+      for (let i = 0; i < N; i++) {
+        const simDb = { teams: {}, h2h: {} };
+        for (let t in db.teams) simDb.teams[t] = { ...db.teams[t] };
+        for (let t in db.h2h) simDb.h2h[t] = { ...db.h2h[t] };
+
+        for (const m of unplayed) {
+          const res = possibleScores[Math.floor(Math.random() * 4)];
+
+          let t1SeriesWin = res.s1 > res.s2 ? 1 : 0;
+          let t2SeriesWin = res.s2 > res.s1 ? 1 : 0;
+
+          simDb.teams[m.t1].sW += t1SeriesWin;
+          simDb.teams[m.t1].sL += t2SeriesWin;
+          simDb.teams[m.t1].gW += res.s1;
+          simDb.teams[m.t1].gL += res.s2;
+
+          simDb.teams[m.t2].sW += t2SeriesWin;
+          simDb.teams[m.t2].sL += t1SeriesWin;
+          simDb.teams[m.t2].gW += res.s2;
+          simDb.teams[m.t2].gL += res.s1;
+
+          if (t1SeriesWin) {
+            simDb.h2h[m.t1][m.t2] = (simDb.h2h[m.t1][m.t2] || 0) + 1;
+          } else {
+            simDb.h2h[m.t2][m.t1] = (simDb.h2h[m.t2][m.t1] || 0) + 1;
+          }
+        }
+
+        let list = Object.keys(simDb.teams).map(key => ({ id: key, ...simDb.teams[key] }));
+        list.sort((a, b) => {
+          const diffA = a.sW - a.sL;
+          const diffB = b.sW - b.sL;
+          if (diffA !== diffB) return diffB - diffA;
+          const mapDiffA = a.gW - a.gL;
+          const mapDiffB = b.gW - b.gL;
+          if (mapDiffA !== mapDiffB) return mapDiffB - mapDiffA;
+          return 0;
+        });
+
+        const groups = {};
+        list.forEach(t => {
+          const hash = `${t.sW - t.sL}_${t.gW - t.gL}`;
+          if (!groups[hash]) groups[hash] = [];
+          groups[hash].push(t);
+        });
+
+        const finalList = [];
+        Object.keys(groups).sort((a, b) => {
+          const [sdA, mdA] = a.split('_').map(Number);
+          const [sdB, mdB] = b.split('_').map(Number);
+          if (sdA !== sdB) return sdB - sdA;
+          return mdB - mdA;
+        }).forEach(hash => {
+          const group = groups[hash];
+          if (group.length === 2 && getH2HNet(group[0].id, group[1].id, simDb) < 0) {
+            group.reverse();
+          }
+          finalList.push(...group);
+        });
+
+        let currentRank = 1;
+        for (let j = 0; j < finalList.length; j++) {
+          if (j > 0) {
+            const prev = finalList[j - 1];
+            const curr = finalList[j];
+            let isTied = false;
+
+            const hashPrev = `${prev.sW - prev.sL}_${prev.gW - prev.gL}`;
+            const hashCurr = `${curr.sW - curr.sL}_${curr.gW - curr.gL}`;
+
+            if (hashPrev === hashCurr) {
+              const groupSize = list.filter(t => `${t.sW - t.sL}_${t.gW - t.gL}` === hashCurr).length;
+              if (groupSize === 2) {
+                if (getH2HNet(prev.id, curr.id, simDb) === 0) isTied = true;
+              } else {
+                isTied = true;
+              }
+            }
+            if (!isTied) currentRank = j + 1;
+          }
+          if (currentRank <= 6) top6Counts[finalList[j].id]++;
+        }
+      }
+
+      const probs = {};
+      Object.keys(top6Counts).forEach(t => {
+        probs[t] = ((top6Counts[t] / N) * 100);
+      });
+      return probs;
+    }
+
+    function renderStandings() {
+      const tbody = document.getElementById('standings-body');
+      const tableData = getStandings();
+      const probs = simulateProbabilities();
+
+      tbody.innerHTML = '';
+
+      tableData.forEach((team) => {
+        let sd = team.sW - team.sL;
+        let gDiff = team.gW - team.gL;
+        let sClass = sd > 0 ? "pos-diff" : (sd < 0 ? "neg-diff" : "");
+        let gClass = gDiff > 0 ? "pos-diff" : (gDiff < 0 ? "neg-diff" : "");
+
+        let sdSign = sd > 0 ? "+" : "";
+        let gSign = gDiff > 0 ? "+" : "";
+
+        let rowClass = "";
+        if (team.rank <= 4) rowClass = "row-top4";
+        else if (team.rank <= 6) rowClass = "row-top6";
+
+        let probDisplay = probs[team.id] >= 99.9 && probs[team.id] < 100 ? "99.9" :
+          probs[team.id] > 0 && probs[team.id] <= 0.1 ? "0.1" :
+            probs[team.id] === 100 ? "100" :
+              probs[team.id] === 0 ? "0" :
+                probs[team.id].toFixed(1);
+
+        tbody.innerHTML += `
+          <tr class="${rowClass}">
+            <td class="team-col">
+              <div class="rank-num">${team.rank}</div>
+              <div class="team-tag">${team.tag}</div>
+              <div class="team-name">${team.name}</div>
+            </td>
+            <td><b>${team.sW} - ${team.sL}</b></td>
+            <td class="${sClass}">${sdSign}${sd}</td>
+            <td>${team.gW} - ${team.gL}</td>
+            <td class="${gClass}">${gSign}${gDiff}</td>
+            <td style="font-weight: 800; color: ${team.rank <= 6 ? 'var(--text-main)' : 'var(--text-muted)'}">${probDisplay}%</td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderMatches() {
+      const container = document.getElementById('matches-list');
+      container.innerHTML = '';
+
+      SCHEDULE.forEach(m => {
+        let res = matchResults[m.id];
+        container.innerHTML += `
+          <div class="match-card">
+            <div class="match-header">${m.date}</div>
+            <div class="match-teams">
+              <span style="color:var(--accent)">${m.t1}</span> vs <span style="color:var(--accent)">${m.t2}</span>
+            </div>
+            <div class="controls">
+              <button class="btn ${res?.s1 === 2 && res?.s2 === 0 ? 'active' : ''}" onclick="setMatch(${m.id}, 2, 0)">2 - 0</button>
+              <button class="btn ${res?.s1 === 2 && res?.s2 === 1 ? 'active' : ''}" onclick="setMatch(${m.id}, 2, 1)">2 - 1</button>
+              <button class="btn-reset" onclick="setMatch(${m.id}, null, null)">Rst</button>
+              <button class="btn ${res?.s1 === 1 && res?.s2 === 2 ? 'active' : ''}" onclick="setMatch(${m.id}, 1, 2)">1 - 2</button>
+              <button class="btn ${res?.s1 === 0 && res?.s2 === 2 ? 'active' : ''}" onclick="setMatch(${m.id}, 0, 2)">0 - 2</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function setMatch(id, s1, s2) {
+      if (s1 === null) {
+        delete matchResults[id];
+      } else {
+        matchResults[id] = { s1, s2 };
+      }
+      triggerUpdate();
+    }
+
+    function resetAll() {
+      matchResults = {};
+      triggerUpdate();
+    }
+
+    function triggerUpdate() {
+      renderStandings();
+      renderMatches();
+      // Add quick highlight effect to rows to feel responsive
+      const rows = document.querySelectorAll('#standings-body tr');
+      rows.forEach(r => {
+        r.classList.remove('row-updated');
+        void r.offsetWidth;
+        r.classList.add('row-updated');
+      });
+
+    }
+
+    // Init
+    triggerUpdate();
+
+  </script>
+</body>
+
+</html>

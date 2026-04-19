@@ -297,6 +297,46 @@
     .row-updated {
       animation: highlightRow 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    /* Footer */
+    footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    
+    .social-link:hover {
+      color: var(--accent);
+    }
+    
+    .social-link svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .disclaimer {
+      font-size: 0.8rem;
+      max-width: 600px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 
@@ -334,6 +374,18 @@
       </div>
     </div>
   </div>
+
+  <footer>
+    <a href="https://x.com/eldoneladio" target="_blank" rel="noopener noreferrer" class="social-link">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+      </svg>
+      @eldoneladio
+    </a>
+    <div class="disclaimer">
+      <strong>Nota sobre el desempate:</strong> Esta calculadora prioriza primero la diferencia de series (S. Diff), luego la diferencia de mapas (G. Diff) y por último el enfrentamiento directo (H2H) simple. Desconozco si son los criterios oficiales para esta temporada porque no los encontré detallados en la página oficial.
+    </div>
+  </footer>
 
   <script>
     const INIT_TEAMS = {
